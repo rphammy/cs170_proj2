@@ -1,0 +1,6 @@
+numsections 4 
+Loading 4 sections:
+	".text", filepos 0xf0, mempos 0x0, size 0x270
+	".rdata", filepos 0x360, mempos 0x270, size 0xa0
+	".data", filepos 0x400, mempos 0x310, size 0x0
+	".bss", filepos 0x0, mempos 0x310, size 0x0
