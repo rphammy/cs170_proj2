@@ -108,9 +108,6 @@ void ProcessManager::join(int pid) {
     processesWaitingOnPID[pid]--;
     //END HINTS
     
-   
-  
-
     if (processesWaitingOnPID[pid] == 0) {
         processesBitMap.Clear(pid);
     }
@@ -132,11 +129,10 @@ void ProcessManager::broadcast(int pid) {
     if (condition != NULL) { // somebody is waiting on this process
         // BEGIN HINTS
         // Wake up others
+        lock->Acquire();
         condition->Broadcast(lock);
+        lock->Release();
         // END HINTS
-        
-       
-      
     }
 }
 
