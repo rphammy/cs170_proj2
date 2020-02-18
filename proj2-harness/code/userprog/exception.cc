@@ -282,7 +282,10 @@ void exitImpl() {
 
     //BEGIN HINTS 
     //Set the exit status in the PCB of this process using  currentThread->space->getPCB() 
-    //Also let other processes  know this process  exits through  processManager. 
+    currentThread->space->getPCB()->status = status; // maybe P_GOOD instead? or P_BAD? unsure
+
+    //Also let other processes  know this process  exits through  processManager.
+    processManager->broadcast(currPID); 
     //See pcb.cc on how to get the exit code and see processmanager.cc on the above notification.
     //END HINTS
 
@@ -296,6 +299,9 @@ void exitImpl() {
 
     (void) interrupt->SetLevel(oldLevel);
     currentThread->Finish();
+
+    fprintf(stderr, "Process %d exits for sure with %d\n", currPID, status);
+
 }
 
 //----------------------------------------------------------------------
@@ -308,16 +314,15 @@ int joinImpl() {
     currentThread->space->getPCB()->status = P_BLOCKED;
 
    // BEGIN HINTS 
-   // If the other process has  already exited, then just return its status
-   // Use proessManager to wait for the completion of  otherPID.
-   // Change the status of this process  in its PCB as P_RUNNING.
-   // END HINTS
-   //
-    
-   
-  
- 
+   // If the other process has  already exited, then just return its status]
+    if(!(processManager->getStatus(otherPID))){ //status is not 0 unsure about this check
+       // Use proessManager to wait for the completion of  otherPID.
+        processManager->join(otherPID);
+       // Change the status of this process  in its PCB as P_RUNNING.
+        currentThread->space->getPCB()->status = P_RUNNING;
 
+       // END HINTS
+  }
 
     return processManager->getStatus(otherPID);
 }

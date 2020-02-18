@@ -103,7 +103,7 @@ void ProcessManager::join(int pid) {
     //Increment  processesWaitingOnPID[pid].
     processesWaitingOnPID[pid]++;
     //Conditional waiting on conditionForOtherProcess
-    conditionForOtherProcess.Wait(&lockForOtherProcess);
+    conditionForOtherProcess->Wait(lockForOtherProcess);
     //Decrement   processesWaitingOnPID[pid].
     processesWaitingOnPID[pid]--;
     //END HINTS
@@ -132,7 +132,7 @@ void ProcessManager::broadcast(int pid) {
     if (condition != NULL) { // somebody is waiting on this process
         // BEGIN HINTS
         // Wake up others
-        condition.Broadcast(&lock);
+        condition->Broadcast(lock);
         // END HINTS
         
        
