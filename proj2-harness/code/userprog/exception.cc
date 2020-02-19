@@ -195,7 +195,7 @@ int forkImpl() {
     // BEGIN HINTS
     // Make a copy of the address space using AddrSpace::AddrSpace()
     // Give it an address space
-    newThread->space = new AddrSpace(currentThread->space, newPCB);
+    childThread->space = new AddrSpace(currentThread->space, newPCB);
     // END HINTS
 
 
