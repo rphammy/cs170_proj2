@@ -164,7 +164,7 @@ AddrSpace::AddrSpace(const AddrSpace* other, PCB* newpcb) {
         unsigned int i=0;
 	for(i = 0; i < numPages; i++) {
             pageTable[i].virtualPage = (other->pageTable)[i].virtualPage;
-            pageTable[i].physicalPage = (other->pageTable)[i].physicalPage;
+            pageTable[i].physicalPage = memoryManager->getPage();
             pageTable[i].valid = (other->pageTable)[i].valid;
             pageTable[i].use = (other->pageTable)[i].use;
             pageTable[i].dirty = (other->pageTable)[i].dirty;

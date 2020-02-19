@@ -172,13 +172,18 @@ int forkImpl() {
     // BEGIN HINTS
     // Use current-Thread->space to get the current PID
     // See addrspace.cc on how to find PCB, and pcb.cc on how to find PID.
-    // Use processManager to get a new PID. 
     int currPID = currentThread->space->getPCB()->getPID();
-    int newPID = childThread->space->getPCB()->getPID(); 
+
+    // Use processManager to get a new PID. 
+    // int newPID = childThread->space->getPCB()->getPID(); //is this right?
+    int newPID = processManager->getPID();
+
     // Construct new PCB. See pcb.cc on how to create a new PCB.
     PCB* newPCB = new PCB(newPID, currPID);
     // Set the new  process as P_RUNNING 
-    childThread->space->getPCB()->status = P_RUNNING;
+    // childThread->space->getPCB()->status = P_RUNNING;  //trying something else
+    newPCB->status = P_RUNNING;
+
     // Associate the new user process with this childThread
     newPCB->process = childThread;
     // Add this newly created process to processManager using addProcess.
@@ -190,13 +195,14 @@ int forkImpl() {
           return -1;
     }
     
-   
   
     // BEGIN HINTS
     // Make a copy of the address space using AddrSpace::AddrSpace()
     // Give it an address space
     childThread->space = new AddrSpace(currentThread->space, newPCB);
     // END HINTS
+
+
 
 
     int childNumPages = childThread->space->getNumPages();
@@ -268,16 +274,10 @@ void yieldImpl() {
     //Once  this process is resumed for exectuion after yielding,
     //restore the corresponding user process's states (registers using Thread::RestoreUserState() 
     //and page table using AddrSpace::RestoreState()).
-    currentThread->space->RestoreState();
     currentThread->RestoreUserState();
+    currentThread->space->RestoreState();
     //See addrspace.cc and thread.cc on how to save and restore states.
     //END HINTS
-    
-   
-  
- 
-
-
 }
 
 //----------------------------------------------------------------------
@@ -325,7 +325,7 @@ int joinImpl() {
 
    // BEGIN HINTS 
    // If the other process has  already exited, then just return its status]
-    if(processManager->getStatus(otherPID) == -1){ //status is not 0 unsure about this check
+    if(processManager->getStatus(otherPID) == -1){ 
         return processManager->getStatus(otherPID);
     }
     // Use proessManager to wait for the completion of  otherPID.
