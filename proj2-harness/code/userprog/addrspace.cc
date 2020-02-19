@@ -143,6 +143,8 @@ AddrSpace::AddrSpace(OpenFile *executable, PCB* newpcb)
 //     Copy constructor that makes an identical copy of this address space.
 //----------------------------------------------------------------------
 
+// <<<<<<<<<<<<<<<< MAY NEED EDITING  <<<<<<<<<<<<<<<<<<
+// compiled but I'm not sure about the second hint block of code
 AddrSpace::AddrSpace(const AddrSpace* other, PCB* newpcb) {
     
     ASSERT(other->numPages <= NumPhysPages);
