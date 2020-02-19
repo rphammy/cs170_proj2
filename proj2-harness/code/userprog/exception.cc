@@ -261,7 +261,7 @@ void yieldImpl() {
 
     //BEGIN HINTS
     //Save the corresponding user process's register states.
-    currentThread->space->SaveState();
+    //currentThread->space->SaveState();
     currentThread->SaveUserState();
     //This kernel thread yields using currentThread->Yield() to accomplish the context switch
     currentThread->Yield();
