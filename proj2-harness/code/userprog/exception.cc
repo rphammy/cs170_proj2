@@ -171,6 +171,7 @@ int forkImpl() {
 
     // BEGIN HINTS
     // Use current-Thread->space to get the current PID
+    
     // See addrspace.cc on how to find PCB, and pcb.cc on how to find PID.
     // Use processManager to get a new PID. 
     // Construct new PCB. See pcb.cc on how to create a new PCB.
@@ -253,10 +254,15 @@ void yieldImpl() {
 
     //BEGIN HINTS
     //Save the corresponding user process's register states.
+    currentThread->state->SaveState();
+    currentThread->SaveUserState();
     //This kernel thread yields using currentThread->Yield() to accomplish the context switch
+    currentThread->Yield();
     //Once  this process is resumed for exectuion after yielding,
     //restore the corresponding user process's states (registers using Thread::RestoreUserState() 
     //and page table using AddrSpace::RestoreState()).
+    currentThread->state->RestoreState();
+    currentThread->RestoreUserState();
     //See addrspace.cc and thread.cc on how to save and restore states.
     //END HINTS
     
