@@ -268,16 +268,10 @@ void yieldImpl() {
     //Once  this process is resumed for exectuion after yielding,
     //restore the corresponding user process's states (registers using Thread::RestoreUserState() 
     //and page table using AddrSpace::RestoreState()).
-    currentThread->space->RestoreState();
     currentThread->RestoreUserState();
+    currentThread->space->RestoreState();
     //See addrspace.cc and thread.cc on how to save and restore states.
     //END HINTS
-    
-   
-  
- 
-
-
 }
 
 //----------------------------------------------------------------------
@@ -325,7 +319,7 @@ int joinImpl() {
 
    // BEGIN HINTS 
    // If the other process has  already exited, then just return its status]
-    if(processManager->getStatus(otherPID) == -1){ //status is not 0 unsure about this check
+    if(processManager->getStatus(otherPID) == -1){ 
         return processManager->getStatus(otherPID);
     }
     // Use proessManager to wait for the completion of  otherPID.
