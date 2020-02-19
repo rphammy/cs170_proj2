@@ -566,7 +566,6 @@ void writeImpl() {
        userReadWrite(writeAddr, buffer, size, USER_WRITE);
        //END HINTS
         
-        
         UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
         if (userFile == NULL) {
          return;
@@ -618,9 +617,9 @@ int readImpl() {
         SysOpenFile* sysOpFile = openFileManager->getFile(userFile->indexInSysOpenFileList);
         //Use ReadAt() to read the file at selected offset to this system buffer buffer[]
 
-        sysOpFile->file->ReadAt(buffer, numActualBytesRead, userFile->indexInSysOpenFileList);  //this line is causing the seg fault
+        sysOpFile->file->ReadAt(buffer, numActualBytesRead, userFile->currOffsetInFile);  //this line is causing the seg fault
         // Adust the offset in userFile to reflect my current position.
-        userFile->currOffsetInFile = 0;
+        userFile->currOffsetInFile += numActualBytesRead;
         // The above few lines of code are very similar to ones in writeImpl()
         // END HINTS 
         // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
