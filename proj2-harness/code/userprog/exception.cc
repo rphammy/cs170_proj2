@@ -175,13 +175,11 @@ int forkImpl() {
     int currPID = currentThread->space->getPCB()->getPID();
 
     // Use processManager to get a new PID. 
-    // int newPID = childThread->space->getPCB()->getPID(); //is this right?
     int newPID = processManager->getPID();
 
     // Construct new PCB. See pcb.cc on how to create a new PCB.
     PCB* newPCB = new PCB(newPID, currPID);
     // Set the new  process as P_RUNNING 
-    // childThread->space->getPCB()->status = P_RUNNING;  //trying something else
     newPCB->status = P_RUNNING;
 
     // Associate the new user process with this childThread
@@ -267,7 +265,6 @@ void yieldImpl() {
 
     //BEGIN HINTS
     //Save the corresponding user process's register states.
-    //currentThread->space->SaveState();
     currentThread->SaveUserState();
     //This kernel thread yields using currentThread->Yield() to accomplish the context switch
     currentThread->Yield();
@@ -484,10 +481,14 @@ int openImpl(char* filename) {
 
     // Either way, add it to the current PCB's open file list
     UserOpenFile currUserFile;
-   //BEGIN HINTS 
-   //Set up this UserOpenFile data structure
-   // currUserFile.indeInSysOpenFileList should point to the index from openFileManager.
+   // BEGIN HINTS 
+   // Set up this UserOpenFile data structure
+   // currUserFile.indexInSysOpenFileList should point to the index from openFileManager.
    // currUserFile.currOffsetInFile is the offset position of the current file openned
+   currUserFile.fileName = copyString(filename);
+   currUserFile.indexInSysOpenFileList = index;
+   currUserFile.currOffsetInFile = 0;
+   // currUserFile.currOffsetInFile = 0;
    // END HINTS
    // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
    // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
@@ -562,6 +563,7 @@ void writeImpl() {
         buffer = new char[size];
        //BEGIN HINTS
        //Fetch data from the user space to this system buffer using  userReadWrite().
+       userReadWrite(writeAddr, buffer, size, USER_WRITE);
        //END HINTS
         
         
@@ -571,15 +573,16 @@ void writeImpl() {
         }
         //BEGIN HINTS 
         //Use openFileManager->getFile method  to find the openned file structure (SysOpenFile)
-        //Use SysOpenFile->file's writeAt() to write out the above buffer with size listed.
+        SysOpenFile* currSysFile = openFileManager->getFile(userFile->indexInSysOpenFileList);
+        //Use SysOpenFile->file's writeAt() to write out the above buffer with size listed.         
+        openFileManager->consoleWriteLock->Acquire();
+        currSysFile->file->WriteAt(buffer,size,userFile->currOffsetInFile);
+        openFileManager->consoleWriteLock->Release();
         //Increment the current offset  by the actual number of bytes written.
+        userFile->currOffsetInFile += size; 
         //END HINTS 
        // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
        // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
-    
-
-
-    
         
     }
     delete [] buffer;
@@ -591,7 +594,7 @@ void writeImpl() {
 
 int readImpl() {
 
-    //int readAddr = machine->ReadRegister(4);
+    int readAddr = machine->ReadRegister(4);
     int size = machine->ReadRegister(5);
     int fileID = machine->ReadRegister(6);
     char* buffer = new char[size + 1];
@@ -610,24 +613,23 @@ int readImpl() {
         if (userFile == NULL) {
             return 0;
         }
-
         //BEGIN HINTS
         //Now from openFileManger, find the SystemOpenFile data structure for this userFile.
+        SysOpenFile* sysOpFile = openFileManager->getFile(userFile->indexInSysOpenFileList);
         //Use ReadAt() to read the file at selected offset to this system buffer buffer[]
+
+        sysOpFile->file->ReadAt(buffer, numActualBytesRead, userFile->indexInSysOpenFileList);  //this line is causing the seg fault
         // Adust the offset in userFile to reflect my current position.
+        userFile->currOffsetInFile = 0;
         // The above few lines of code are very similar to ones in writeImpl()
         // END HINTS 
         // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
         // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
  
-        
-       
-      
-     
-    
     }
     //BEGIN HINTS
     //Now copy data from the system buffer to the targted main memory space using userReadWrite()
+    userReadWrite(readAddr, buffer, size, USER_READ);
     //END HINTS
     
     delete [] buffer;
@@ -647,8 +649,11 @@ void closeImpl() {
     } else {
        // BEGIN HINTS
        // Use openFileManager's getFile method to get a pointer to the system-wide SysOpenFile  data structure
+       SysOpenFile* currSysFile = openFileManager->getFile(userFile->indexInSysOpenFileList);
        // Call the close method in SysOpenFile
+       currSysFile->closedBySingleProcess();
        // Remove the file  in the open file list of this process PCB using PCB::removeFILE().
+       currentThread->space->getPCB()->removeFile(fileID);
        // END HINTS
        // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
        // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
